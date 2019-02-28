@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Field{% endblock %}
+{% block content %}
+    <main id="pitView">
+        <div>
+            <form method="POST" action="{{ url_for('pit_view') }}">
+                <h2>Against</h2>
+                <hr>
+                <label for="team-one">Team:</label>
+                <select id="team-one" name="team-one"  >
+                    <option disabled selected value></option>
+                    {% for team in teams %}
+                        <option value= "{{ team[0] }}">{{ team[0]|string + " " + team[1]|string }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="team-two">Team:</label>
+                <select id="team-two" name="team-two"  >
+                    <option disabled selected value></option>
+                    {% for team in teams %}
+                        <option value= "{{ team[0] }}">{{ team[0]|string + " " + team[1]|string }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="team-three">Team:</label>
+                <select id="team-three" name="team-three"  >
+                    <option disabled selected value></option>
+                    {% for team in teams %}
+                        <option value= "{{ team[0] }}">{{ team[0]|string + " " + team[1]|string }}</option>
+                    {% endfor %}
+                </select>
+
+                <h2>With</h2>
+                <hr>
+                <label for="team-wone">Team:</label>
+                <select id="team-wone" name="team-wone"  >
+                    <option disabled selected value></option>
+                    {% for team in teams %}
+                        <option value= "{{ team[0] }}">{{ team[0]|string + " " + team[1]|string }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="team-wtwo">Team:</label>
+                <select id="team-wtow" name="team-wtwo"  >
+                    <option disabled selected value></option>
+                    {% for team in teams %}
+                        <option value= "{{ team[0] }}">{{ team[0]|string + " " + team[1]|string }}</option>
+                    {% endfor %}
+                </select>
+
+
+                <input type="submit">
+            </form>
+
+            {% if data_against|length > 0 %}
+                <h2>Against</h2>
+                <hr>
+                {% for d in data_against %}
+                    <div class="resourceTabs">
+                        <p>Team: {{ d[0] }} {{ d[12] }}</p>
+                        <p>Drive Train: {{ d[1] }}</p>
+                        <p>Speed: {{ d[2] }}</p>
+                        <p>Fabrication: {{ d[3] }}</p>
+                        <p>Auto: {{ d[4] }}</p>
+                        <p>Teleop: {{ d[5] }}</p>
+                        <p>Cargo Mechanism: {{ d[6] }}</p>
+                        <p>Hatch Mechanism: {{ d[7] }}</p>
+                        <p>Cargo Ship Strategy: {{ d[8] }}</p>
+                        <p>Rocket Strategy: {{ d[9] }}</p>
+                        <p>Climb Strategy: {{ d[10] }}</p>
+                        <p>Other Strategies: {{ d[11] }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if data_with|length > 0 %}
+                <h2>With</h2>
+                <hr>
+                {% for d in data_with %}
+                    <div class="resourceTabs">
+                        <p>Team: {{ d[0] }} {{ d[12] }}</p>
+                        <p>Drive Train: {{ d[1] }}</p>
+                        <p>Speed: {{ d[2] }}</p>
+                        <p>Fabrication: {{ d[3] }}</p>
+                        <p>Auto: {{ d[4] }}</p>
+                        <p>Teleop: {{ d[5] }}</p>
+                        <p>Cargo Mechanism: {{ d[6] }}</p>
+                        <p>Hatch Mechanism: {{ d[7] }}</p>
+                        <p>Cargo Ship Strategy: {{ d[8] }}</p>
+                        <p>Rocket Strategy: {{ d[9] }}</p>
+                        <p>Climb Strategy: {{ d[10] }}</p>
+                        <p>Other Strategies: {{ d[11] }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="scout-btn">
+                <a href="{{ url_for('index') }}">Home</a>
+            </div>
+        </div>
+    </main>
+
+
+{% endblock %}

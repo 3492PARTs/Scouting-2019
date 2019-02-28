@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Scouting{% endblock %}
+{% block content %}
+    <main id="scout-index">
+        {% if not valid %}
+            <div id="passwd">
+                <form method="POST" action="{{ url_for('index') }}">
+                    <label for="pass">Enter Pass Phrase: </label>
+                    <input type="password" name="pass" id="pass" required>
+                    <br>
+                    <label for="event">Event:</label>
+                    <select id="event" name="event" required>
+                        <option disabled selected value></option>
+                        {% for event in events %}
+                            <option value= "{{ event[0] }}">{{ event[1]|string }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit">
+                </form>
+            </div>
+        {% else %}
+            <div>
+                <div id="scout-type">
+                    <div class="scout-btn">
+                        <a href="{{ url_for('pit') }}">PIT</a>
+                    </div>
+                    <div class="scout-btn">
+                        <a href="{{ url_for('field') }}">Field</a>
+                    </div>
+                </div>
+                <div id="data-manip">
+                    <div class="scout-btn">
+                        <a href="{{ url_for('download') }}">Download</a>
+                    </div>
+                    <div class="scout-btn">
+                        <a href="{{ url_for('wipe') }}" onclick="return confirm('Wipe all data?')">Wipe</a>
+                    </div>
+                    <div class="scout-btn">
+                        <form enctype="multipart/form-data" method="post" action="{{ url_for('upload') }}">
+                            <label for="upload">Upload: </label>
+                            <input type="file" id="upload" name="upload">
+                            <input type="submit">
+                        </form>
+                    </div>
+                </div>
+                <div>
+                    <div class="scout-btn">
+                        <a href="{{ url_for('view') }}">Field Data</a>
+                    </div>
+
+                    <div class="scout-btn">
+                        <a href="{{ url_for('pit_view') }}">Pit Data</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </main>
+{% endblock %}

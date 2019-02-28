@@ -1,0 +1,101 @@
+/**********BEGIN VIEW PAGE**********/
+#scout-view{
+    width: 98%;
+
+    &>#table-wrapper{
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 1em;
+    }
+/*
+    table{
+        text-align: center;
+        min-width: 100%;
+        border-collapse: collapse;
+
+        thead{
+            display: block;
+            width: 100%;
+            overflow: auto;
+            color: #fff;
+            background: #000;
+        }
+
+        tbody{
+            display: block;
+            width: 100%;
+            height: calc(100vh - 13em);
+            background: pink;
+            overflow: auto;
+        }
+        thead tr th,
+        tbody tr td{
+            font-size: 1.5em;
+            padding: .5em 1em;
+            text-align: left;
+            vertical-align: top;
+            border-left: 1px solid #fff;
+        }
+        tbody tr:nth-child(even){
+            background-color: darken(white, 20%);
+        }
+        tbody tr:hover{
+            background-color: darken(white, 20%);
+        }
+
+    }*/
+
+
+    #search-results{
+      width: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      //background-color: white;
+      padding-top: 24px;
+
+      tbody tr:nth-child(even) {
+          background-color: #DDD;
+        }
+    }
+
+    .th-inner{
+      position: absolute;
+      top: 0;
+      line-height: 30px;
+    }
+
+    #hidden-header .th-inner{
+      position: static;
+      overflow-y: hidden;
+      height: 0;
+      white-space: nowrap;
+    }
+
+    #table{
+      overflow-x: hidden;
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+
+    #table-header{
+      background-color: #D5ECFF;
+      height: 30px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      border-top-right-radius: .5em;
+      border-top-left-radius: .5em;
+    }
+
+    #table-wrapper{
+      position: relative;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      transition: all 0.2s ease-in-out;
+      background-color: $cardBackgrounds;
+      width: 100%;
+      margin: 1em auto;
+      border-radius: .5em;
+    }
+}
+/**********END VIEW PAGE**********/

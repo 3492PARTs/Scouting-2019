@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Field{% endblock %}
+{% block content %}
+    <main id="mainScout">
+        <div id="scout-field">
+            <form method="POST" action="{{ url_for('field_submit') }}">
+                <div>
+                    <label>Team Number: <select required></select></label>
+                </div>
+
+                <div>
+                    <label>Sand Storm:
+                        <select required>
+                            <option value="a">Autonomous</option>
+                            <option value="t">Teleop</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div>
+                    <label>Starting Level:</label>
+                    <label>Level 1:
+                        <input required type="radio" name="lv" value="1">
+                    </label>
+                    <label>Level 2:
+                        <input required type="radio" name="lv" value="2">
+                    </label>
+                </div>
+
+                <div>
+                    <div>
+                        <label>Preloaded HP Cargo Ship:</label>
+                        <input required type="number">
+                    </div>
+                    <div>
+                        <label>Preloaded C Cargo Ship:</label>
+                        <input required type="number">
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        <label>Preloaded HP Rocket:</label>
+                        <input required type="number">
+                    </div>
+                    <div>
+                        <label>Preloaded C Rocket:</label>
+                        <input required type="number">
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        <label>Auto HP Cargo Ship:</label>
+                        <input required type="number">
+                    </div>
+                    <div>
+                        <label>Auto C Cargo Ship:</label>
+                        <input required type="number">
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        <label>Auto HP Rocket:</label>
+                        <input required type="number">
+                    </div>
+                    <div>
+                        <label>Auto C Rocket:</label>
+                        <input required type="number">
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        <label>Teleop HP Cargo Ship:</label>
+                        <input required type="number">
+                    </div>
+                    <div>
+                        <label>Teleop C Cargo Ship:</label>
+                        <input required type="number">
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        <label>Teleop HP Rocket:</label>
+                        <input required type="number">
+                    </div>
+                    <div>
+                        <label>Teleop C Rocket:</label>
+                        <input required type="number">
+                    </div>
+                </div>
+
+                <div>
+                    <label>Level Climbed: <input required type="number" min="1" max="3" step="1"></label>
+                </div>
+
+                <div>
+                    <label>Comments:
+                        <textarea maxlength="5000"></textarea>
+                    </label>
+                </div>
+
+                <div>
+                    <input type="submit">
+                </div>
+            </form>
+
+            <div class="scout-btn">
+                <a href="{{ url_for('index') }}">Home</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+    function up_sw() {
+        var value = parseInt(document.getElementById('cube-switch').value, 10);
+        value = isNaN(value) ? 0 : value;
+        value++;
+        document.getElementById('cube-switch').value = value;
+    }
+
+    function down_sw() {
+        var value = parseInt(document.getElementById('cube-switch').value, 10);
+        value = isNaN(value) ? 0 : value;
+        value--;
+        if (value < 0) value = 0;
+        document.getElementById('cube-switch').value = value;
+    }
+
+    function up_sc() {
+        var value = parseInt(document.getElementById('cube-scale').value, 10);
+        value = isNaN(value) ? 0 : value;
+        value++;
+        document.getElementById('cube-scale').value = value;
+    }
+
+    function down_sc() {
+        var value = parseInt(document.getElementById('cube-scale').value, 10);
+        value = isNaN(value) ? 0 : value;
+        value--;
+        if (value < 0) value = 0;
+        document.getElementById('cube-scale').value = value;
+    }
+
+    </script>
+{% endblock %}

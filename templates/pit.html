@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Field{% endblock %}
+{% block content %}
+    <main id="mainPit">
+
+        <h1>Pit Results</h1>
+
+        <hr>
+
+        <h3>TO DO</h3>
+        {% for t in todo %}
+            <a href="{{ url_for('pit_scout', team_no=t.team_no) }}"> {{ t.team_no ~ " " ~ t.team_nm }}</a>
+            <br>
+        {% endfor %}
+
+
+        <h3>DONE</h3>
+        {% for t in done %}
+            <a href="{{ url_for('pit_scout', team_no=t.team_no) }}"> {{ t.team_no ~ " " ~ t.team_nm }}</a>
+            <br>
+        {% endfor %}
+
+    <div class="scout-btn">
+        <a href="{{ url_for('index') }}">Home</a>
+    </div>
+    </main>
+
+{% endblock %}

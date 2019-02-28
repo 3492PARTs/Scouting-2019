@@ -1,0 +1,56 @@
+/**********BEGIN HOME PAGE**********/
+#scout-index{
+    text-align: center;
+}
+
+.scout-btn{
+    background-color: $mainColor;
+    display: inline-block;
+    margin: 2em;
+    overflow: hidden;
+
+    a{
+        text-decoration: none;
+        font-size: 2em;
+        padding: 2em;
+        color: white;
+    }
+
+    label,
+    input[type=file]{
+        color: white;
+    }
+
+    label,
+    input,
+    select{
+        font-size: 1.5em;
+    }
+}
+
+#passwd{
+    background-color: $mainColor;
+    display: inline-block;
+    margin: 2em;
+    padding: 2em;
+
+    label{
+        color: white;
+    }
+
+    label,
+    input,
+    select{
+        font-size: 1.5em;
+    }
+}
+
+#scout-type{
+
+}
+
+#data-manip{
+
+}
+
+/**********END HOME PAGE**********/

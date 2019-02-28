@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Field{% endblock %}
+{% block content %}
+    <main id="mainPit">
+
+        <h1>{{ team[0] ~ " " ~ team[1] }}</h1>
+
+        <hr>
+
+        <form method="POST" action="{{ url_for('pit_submit') }}">
+            <input name="team_no" type="hidden" value="{{ team[0] }}">
+            <div class="form-control-1">
+                <label for="drive-train">What kind of drive train do you have?</label>
+                <br>
+                <textarea rows="4" cols="25" id="drive-train" name="drive-train" maxlength="500">{{ results[0] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="fast">How fast is your robot?</label>
+                <br>
+                <textarea rows="4" cols="25" id="fast" name="fast" maxlength="50">{{ results[1] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="fast">How is your robot held together (eg. welding, bolted, rivets)?</label>
+                <br>
+                <textarea rows="4" cols="25" id="held" name="held" maxlength="50">{{ results[2] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="auto">What can you do in autonomous?</label>
+                <br>
+                <textarea rows="4" cols="25" id="auto" name="auto" maxlength="5000">{{ results[3] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="auto">What can you do in teleop?</label>
+                <br>
+                <textarea rows="4" cols="25" id="teleop" name="teleop" maxlength="5000">{{ results[4] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="cubes">How do you pick up cargo?</label>
+                <br>
+                <textarea rows="4" cols="25" id="cargo-mech" name="cargo-mech" maxlength="500">{{ results[5] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="scale">Do you pick up hatches?</label>
+                <br>
+                <textarea rows="4" cols="25" id="hatch-mech" name="hatch-mech" maxlength="500">{{ results[6] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="switch">How do you score in the cargo ship?</label>
+                <br>
+                <textarea rows="4" cols="25" id="cargo-ship" name="cargo-ship" maxlength="5000">{{ results[7] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="hang">How do you score in the rocket?</label>
+                <br>
+                <textarea rows="4" cols="25" id="rocket" name="rocket" maxlength="5000">{{ results[8] }}</textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="climb">How does your robot climb, what level?</label>
+                <br>
+                <textarea rows="4" cols="25" id="climb" name="climb" maxlength="2000"> {{ results[9] }} </textarea>
+            </div>
+
+            <div class="form-control-2">
+                <label for="climb">Other important strategies/notes?</label>
+                <br>
+                <textarea rows="4" cols="25" id="strat" name="strat" maxlength="5000"> {{ results[10] }} </textarea>
+            </div>
+
+            <div class="form-control-2">
+                <input type="file" name="image" accept="image/*">
+            </div>
+
+            <input type="submit">
+        </form>
+
+        <div class="scout-btn">
+            <a href="{{ url_for('pit') }}">Pit</a>
+        </div>
+
+
+
+
+    </main>
+
+{% endblock %}
