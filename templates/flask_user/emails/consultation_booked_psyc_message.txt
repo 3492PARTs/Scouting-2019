@@ -1,0 +1,9 @@
+{% extends 'flask_user/emails/base_message.txt' %}
+
+{% block message %}
+
+    {{ child_name }} has been scheduled an appointment with you.
+    Their appointment has been scheduled for {{ appt_st_tm }}, the appointment will last {{ appt_len }}.
+    It has not been approved by Office Staff yet.
+
+{% endblock %}

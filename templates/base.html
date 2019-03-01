@@ -54,6 +54,20 @@
                 <li>
                     <p><a href="http://parts3492.org/first/">FIRST</a></p>
                 </li>
+                {% if current_user.is_authenticated %}
+                    <li class="navDropdown">
+                        <a href="{{ url_for('user.profile') }}">WELCOME: {{ current_user.first_name.upper() }}</a>
+                        <ul class="subNav">
+                            <li>
+                                <a href="{{ url_for('user.logout') }}">LOG OUT</a>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ url_for('user.login') }}">LOG IN</a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </div>

@@ -2,12 +2,9 @@
 {% block title %}Scouting{% endblock %}
 {% block content %}
     <main id="scout-index">
-        {% if not valid %}
+        {% if event_id == ''%}
             <div id="passwd">
                 <form method="POST" action="{{ url_for('index') }}">
-                    <label for="pass">Enter Pass Phrase: </label>
-                    <input type="password" name="pass" id="pass" required>
-                    <br>
                     <label for="event">Event:</label>
                     <select id="event" name="event" required>
                         <option disabled selected value></option>

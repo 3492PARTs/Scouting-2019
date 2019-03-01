@@ -1,0 +1,8 @@
+{% extends 'flask_user/emails/base_message.txt' %}
+
+{% block message %}
+
+    The appointment for your child, {{ child_name }}, has been denied.
+    We apologize for this incontinence, please re-schedule or contact office staff for more information.
+
+{% endblock %}

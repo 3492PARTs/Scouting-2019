@@ -1,0 +1,14 @@
+{% extends 'flask_user/emails/base_message.txt' %}
+
+{% block message %}
+
+    The appointment for {{ child_name }}, has been paid.
+    Their appointment has been scheduled for {{ appt_st_tm }}, the appointment will last {{ appt_len }}.
+
+    {% if psyc %}
+        You will be send an email from Skype 10 mins before your appointment, see you then!
+
+        If you are going to video conference on a mobile device be sure to put your browser in desktop mode.
+    {% endif %}
+
+{% endblock %}

@@ -7,6 +7,8 @@
 @import '_layout/_screenSize';
 @import '_components/_navigation';
 @import '_components/_footer';
+@import '_components/_box';
+@import '_components/_button';
 @import '_vendors/_bduke';
 
 /**********END GLOBAL CSS**********/
@@ -15,4 +17,5 @@
 @import '_pages/_field';
 @import '_pages/_view';
 @import '_pages/_pit';
+@import '_pages/_user-mgnt';
 

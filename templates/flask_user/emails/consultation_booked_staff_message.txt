@@ -1,0 +1,9 @@
+{% extends 'flask_user/emails/base_message.txt' %}
+
+{% block message %}
+
+    {{ child_name }} has scheduled an appointment.
+    Their appointment has been scheduled for {{ appt_st_tm }}, the appointment will last {{ appt_len }}.
+    This appointment is pending payment and will now be in your payment portal.
+
+{% endblock %}

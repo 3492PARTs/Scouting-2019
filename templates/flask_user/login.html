@@ -1,0 +1,67 @@
+{% extends 'flask_user/public_base.html' %}
+
+{% block content %}
+{% from "flask_user/_macros.html" import render_field, render_checkbox_field, render_submit_field %}
+<main class="main-user-mgnt">
+    <div class="box" id="login">
+        <h1>{%trans%}Sign in{%endtrans%}</h1>
+        <hr>
+        <form action="" method="POST" class="form" role="form">
+            {{ form.hidden_tag() }}
+
+            {# Username or Email field #}
+            {% set field = form.username if user_manager.enable_username else form.email %}
+            <div class="form-group {% if field.errors %}has-error{% endif %}">
+                <div class="input-box form-control-1">
+                    <label for="username"><i class="fa fa-user input-icon" aria-hidden="true"></i><span class="sr-only">Username or Email</span></label>
+                    {{ field(class_='noborder', tabindex=110, placeholder="Username or Email") }}
+                </div>
+                {% if field.errors %}
+                    {% for e in field.errors %}
+                        <p class="help-block">{{ e }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            {# Password field #}
+            {% set field = form.password %}
+            <div class="form-group {% if field.errors %}has-error{% endif %}">
+                <div class="input-box form-control-2">
+                    <label for="password"><i class="fa fa-key input-icon" aria-hidden="true"></i><span class="sr-only">Password</span></label>
+                    {{ field(class_='noborder', tabindex=120, placeholder="Password") }}
+                </div>
+                {% if field.errors %}
+                    {% for e in field.errors %}
+                        <p class="help-block">{{ e }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-control-2">
+                {# Remember me #}
+                {% if user_manager.enable_remember_me %}
+                {{ render_checkbox_field(login_form.remember_me, tabindex=130) }}
+                {% endif %}
+            </div>
+
+            <div class="form-control-2">
+                {# Submit button #}
+                {{ render_submit_field(form.submit, tabindex=180) }}
+            </div>
+
+            {# Label on left, "New here? Register." on right #}
+            <div class="row link form-control-2">
+                {% if user_manager.enable_register and not user_manager.require_invitation %}
+                    <a href="{{ url_for('user.register') }}" tabindex='190'>
+                        {%trans%}First-Time User{%endtrans%}</a>
+                {% endif %}
+            <p>|</p>
+            {# Label on left, "Forgot your Password?" on right #}
+                {% if user_manager.enable_forgot_password %}
+                    <a href="{{ url_for('user.forgot_password') }}" tabindex='195'>
+                        {%trans%}Forgot Password{%endtrans%}</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

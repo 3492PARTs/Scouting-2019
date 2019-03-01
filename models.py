@@ -70,17 +70,24 @@ class pit(MySQLModel):
 
 class robot_match(MySQLModel):
     match_id = PrimaryKeyField()
-    event_id = ForeignKeyField(event, to_field="event_id")
+    event = ForeignKeyField(event, to_field="event_id")
     team_no = ForeignKeyField(team, to_field="team_no", db_column="team_no")
-    auto_hp = IntegerField()
-    auto_c = IntegerField()
     sandstorm = CharField()
-    teleop_hp = IntegerField()
-    teleop_c = CharField()
-    lv_climbed = IntegerField()
+    st_lvl = IntegerField()
+    pre_cargo_hp = IntegerField()
+    pre_cargo_c = IntegerField()
+    pre_rocket_hp = IntegerField()
+    pre_rocket_c = IntegerField()
+    auto_cargo_hp = IntegerField()
+    auto_cargo_c = IntegerField()
+    auto_rocket_hp = IntegerField()
+    auto_rocket_c = IntegerField()
+    teleop_cargo_hp = IntegerField()
+    teleop_cargo_c = IntegerField()
+    teleop_rocket_hp = IntegerField()
+    teleop_rocket_c = IntegerField()
+    lv_climb = IntegerField()
     comments = CharField()
-    preload_c = IntegerField()
-    preload_hp = IntegerField()
 
     class Meta:
         db_table = "robot_match"
