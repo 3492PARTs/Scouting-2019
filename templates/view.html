@@ -5,7 +5,7 @@
         <div class="scout-btn">
             <a href="{{ url_for('index') }}">Home</a>
         </div>
-
+        <script src="{{ url_for('static', filename='scripts/jquery.tableheaderfixed.min.js') }}"></script>
         <script>
             // basic js search function for a table
             function search(tableName) {
@@ -33,19 +33,13 @@
         <label for="search">Team No.</label>
         <input id="search" name="search" type="number" min="0" step="1" onkeydown="search('search-results')">
 
-        <div id="table-wrapper">
-            <div id="table-header"></div>
-            <div id="table">
-                <table id="search-results">
+        <div id="table-scroll">
+            <div id="table-wrapper">
+                <table class="table" id="search-results">
                     <thead>
                         <tr>
                             {% for col in cols %}
-                                <th><div class="th-inner">{{ col }}</div></th>
-                            {% endfor %}
-                        </tr>
-                        <tr id="hidden-header">
-                            {% for col in cols %}
-                                <th><div class="th-inner">{{ col }}</div></th>
+                                <th>{{ col }}</th>
                             {% endfor %}
                         </tr>
                     </thead>
@@ -61,6 +55,10 @@
                 </table>
             </div>
         </div>
+
+        <script>
+            //$('#search-results').fixedHeaderTable({ fixedColumn: false });
+        </script>
 
     </main>
 {% endblock %}
