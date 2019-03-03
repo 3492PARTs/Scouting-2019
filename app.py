@@ -142,6 +142,9 @@ def index():
 @app.route('/field')
 @login_required
 def field():
+    if event.get_event_id() == -1:
+        return redirect(url_for('index'))
+
     teams = db.team.select(db.team.team_no, db.team.team_nm).join(db.event_team_xref, JOIN_INNER, (
             db.team.team_no == db.event_team_xref.team_no) & (db.event_team_xref.event == event.get_event_id())).order_by(
         db.team.team_no.asc()).tuples()
@@ -152,6 +155,9 @@ def field():
 @app.route('/field-submit', methods=['POST'])
 @login_required
 def field_submit():
+    if event.get_event_id() == -1:
+        return redirect(url_for('index'))
+
     match = db.robot_match(event=event.get_event_id(),
                            team_no=request.form.get('team-no', None),
                            sandstorm=request.form.get('sand-storm', ''),
@@ -242,6 +248,9 @@ def upload():
 @app.route('/view')
 @login_required
 def view():
+    if event.get_event_id() == -1:
+        return redirect(url_for('index'))
+
     matches = db.robot_match.select(
         db.robot_match.team_no,
         db.robot_match.sandstorm,
@@ -273,6 +282,9 @@ def view():
 @app.route('/pit')
 @login_required
 def pit():
+    if event.get_event_id() == -1:
+        return redirect(url_for('index'))
+
     done = db.team.select(db.team.team_no, db.team.team_nm).where(db.pit.select(fn.Count(db.pit.team_no)).where(
         (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) != 0)
 
@@ -285,6 +297,9 @@ def pit():
 @app.route('/pit-scout')
 @login_required
 def pit_scout():
+    if event.get_event_id() == -1:
+        return redirect(url_for('index'))
+
     team_no = request.args.get('team_no', None)
 
     team = db.team.select().where(db.team.team_no == team_no)
@@ -309,6 +324,9 @@ def pit_scout():
 @app.route('/pit-submit', methods=['POST'])
 @login_required
 def pit_submit():
+    if event.get_event_id() == -1:
+        return redirect(url_for('index'))
+
     team_no = request.form.get('team_no')
     drivetrain = request.form.get('drive-train', "")
     fast = request.form.get('fast', '')
@@ -351,6 +369,9 @@ def pit_submit():
 @app.route('/pit-view', methods=['GET', 'POST'])
 @login_required
 def pit_view():
+    if event.get_event_id() == -1:
+        return redirect(url_for('index'))
+    
     teams = db.team.select().join(db.event_team_xref, JOIN_INNER,
                                   (db.team.team_no == db.event_team_xref.team_no) & (
                                           db.event_team_xref.event == event.get_event_id())).order_by(
