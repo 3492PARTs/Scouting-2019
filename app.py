@@ -1,4 +1,7 @@
+import math
+
 from flask import Flask, render_template, request, redirect, url_for, Response
+from flask_wtf import FlaskForm
 from peewee import *
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
@@ -6,13 +9,21 @@ from flask_user import login_required, roles_required, UserManager, UserMixin, S
     user_registered, emails
 from flask_user.forms import RegisterForm
 from wtforms import StringField, FieldList
+from flask_wtf import FlaskForm
+from peewee import DoesNotExist
+from playhouse.flask_utils import object_list
+from wtforms import SelectField, SubmitField, RadioField
+from wtforms import StringField, FieldList
 from wtforms.validators import DataRequired
-
+import sqlalchemy.exc
 import models as db
+import query
+from eventID import eventID
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'thisisasecret'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://elgyqslrczcdhpme:kdfd5rqRVKPdyWzmuym3jh4dZVvdEZphefNuZnw3mFkccxsqD2UZxJachbmi4mm5@f79d1040-d58c-4b2d-a431-a88d017b1284.mysql.sequelizer.com/dbf79d1040d58c4b2da431a88d017b1284'
+app.config[
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://elgyqslrczcdhpme:kdfd5rqRVKPdyWzmuym3jh4dZVvdEZphefNuZnw3mFkccxsqD2UZxJachbmi4mm5@f79d1040-d58c-4b2d-a431-a88d017b1284.mysql.sequelizer.com/dbf79d1040d58c4b2da431a88d017b1284'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['CSRF_ENABLED'] = True
 app.config['USER_APP_NAME'] = 'Passion'
@@ -42,7 +53,7 @@ class User(db_alchemy.Model, UserMixin):
 
     # Relationships
     roles = db_alchemy.relationship('Role', secondary='user_roles',
-                            backref=db_alchemy.backref('users', lazy='dynamic'))
+                                    backref=db_alchemy.backref('users', lazy='dynamic'))
 
     def is_active(self):
         return self.active
@@ -78,7 +89,8 @@ class MyRegisterForm(RegisterForm):
 # Setup Flask-User
 db_alchemy_adapter = SQLAlchemyAdapter(db_alchemy, UserClass=User)  # Register the User model
 user_manager = UserManager(db_alchemy_adapter, app, register_form=MyRegisterForm)  # Initialize Flask-User
-event = 4
+
+event = eventID()
 
 
 # This hook ensures that a connection is opened to handle any queries
@@ -96,6 +108,7 @@ def _db_close(exc):
     if not db.db.is_closed():
         db.db.close()
 
+
 # This hook ensures that a user is given a role when they sign up
 # new user registered
 @user_registered.connect_via(app)
@@ -106,61 +119,65 @@ def _after_register_hook(sender, user, **extra):
     db_alchemy.session.commit()
 
 
-@login_required
+@app.errorhandler(sqlalchemy.exc.OperationalError)
+def handle_bad_request(e):
+    return redirect(request.path)
+
+
 @app.route('/', methods=['GET', 'POST'])
+@login_required
 def index():
     events = db.event.select().order_by(db.event.event_id.asc()).tuples()
     events = list(events)
 
-    event_id = request.form.get('event', '')
-    global event
-    event = event_id
+    if event.get_event_id() == -1 or request.form.get('event', '') != '':
+        event_id = request.form.get('event', '')
+        event.set_event_id(event_id)
+    else:
+        event_id = event.get_event_id()
 
     return render_template('index.html', events=events, event_id=event_id)
 
 
 @app.route('/field')
+@login_required
 def field():
-    if valid:
-        teams = db.team.select(db.team.team_no, db.team.team_nm).join(db.event_team_xref, JOIN_INNER, (
-                    db.team.team_no == db.event_team_xref.team_no) & (db.event_team_xref.event == event)).order_by(
-            db.team.team_no.asc()).tuples()
-        teams = list(teams)
-        return render_template('field.html', teams=teams)
-    else:
-        return redirect(url_for('index'))
+    teams = db.team.select(db.team.team_no, db.team.team_nm).join(db.event_team_xref, JOIN_INNER, (
+            db.team.team_no == db.event_team_xref.team_no) & (db.event_team_xref.event == event.get_event_id())).order_by(
+        db.team.team_no.asc()).tuples()
+    teams = list(teams)
+    return render_template('field.html', teams=teams)
 
 
 @app.route('/field-submit', methods=['POST'])
+@login_required
 def field_submit():
-    if valid:
-        match = db.robot_match(event=event,
-                               team_no=request.form.get('team-no', None),
-                               sandstorm=request.form.get('sand-storm', ''),
-                               st_lvl=request.form.get('lv', ''),
-                               pre_cargo_hp=request.form.get('pre-cargo-hp', ''),
-                               pre_cargo_c=request.form.get('pre-cargo-c', ''),
-                               pre_rocket_hp=request.form.get('pre-rocket-hp', ''),
-                               pre_rocket_c=request.form.get('pre-rocket-c', ''),
-                               auto_cargo_hp=request.form.get('auto-cargo-hp', ''),
-                               auto_cargo_c=request.form.get('auto-cargo-c', ''),
-                               auto_rocket_hp=request.form.get('auto-rocket-hp', ''),
-                               auto_rocket_c=request.form.get('auto-rocket-c', ''),
-                               teleop_cargo_hp=request.form.get('teleop-cargo-hp', ''),
-                               teleop_cargo_c=request.form.get('teleop-cargo-c', ''),
-                               teleop_rocket_hp=request.form.get('teleop-rocket-hp', ''),
-                               teleop_rocket_c=request.form.get('teleop-rocket-c', ''),
-                               lv_climb=request.form.get('lv-climb', ''),
-                               comments=request.form.get('comments', '').replace(",", "."))
+    match = db.robot_match(event=event.get_event_id(),
+                           team_no=request.form.get('team-no', None),
+                           sandstorm=request.form.get('sand-storm', ''),
+                           st_lvl=request.form.get('lv', ''),
+                           pre_cargo_hp=request.form.get('pre-cargo-hp', ''),
+                           pre_cargo_c=request.form.get('pre-cargo-c', ''),
+                           pre_rocket_hp=request.form.get('pre-rocket-hp', ''),
+                           pre_rocket_c=request.form.get('pre-rocket-c', ''),
+                           auto_cargo_hp=request.form.get('auto-cargo-hp', ''),
+                           auto_cargo_c=request.form.get('auto-cargo-c', ''),
+                           auto_rocket_hp=request.form.get('auto-rocket-hp', ''),
+                           auto_rocket_c=request.form.get('auto-rocket-c', ''),
+                           teleop_cargo_hp=request.form.get('teleop-cargo-hp', ''),
+                           teleop_cargo_c=request.form.get('teleop-cargo-c', ''),
+                           teleop_rocket_hp=request.form.get('teleop-rocket-hp', ''),
+                           teleop_rocket_c=request.form.get('teleop-rocket-c', ''),
+                           lv_climb=request.form.get('lv-climb', ''),
+                           comments=request.form.get('comments', '').replace(",", "."))
 
-        match.save()
+    match.save()
 
-        return redirect(url_for('field'))
-    else:
-        return redirect(url_for('index'))
+    return redirect(url_for('field'))
 
 
 @app.route('/download')
+@login_required
 def download():
     if valid:
         data = db.match.select(db.match.event, db.match.team_no, db.match.scout, db.match.auto_move,
@@ -182,6 +199,7 @@ def download():
 
 
 @app.route('/wipe')
+@roles_required('admin')
 def wipe():
     if valid:
         matches = db.match.delete().where(db.match.event == event)
@@ -192,6 +210,7 @@ def wipe():
 
 
 @app.route('/upload', methods=['POST'])
+@roles_required('admin')
 def upload():
     if valid:
         csv = request.files.get('upload', None)
@@ -221,175 +240,234 @@ def upload():
 
 
 @app.route('/view')
+@login_required
 def view():
-    if valid:
-        matches = db.match.select(db.match.team_no, db.match.match_no, db.match.scout, db.match.auto_move,
-                                  db.match.auto_switch_cubes, db.match.auto_scale_cubes,
-                                  db.match.auto_comm, db.match.tele_switch_cubes, db.match.tele_scale_cubes,
-                                  dbb.match.hang, db.match.tele_comm, db.match.rate).where(db.match.event == event) \
-            .order_by(db.match.team_no.asc(), db.match.match_no.asc()).tuples()
-        matches = list(matches)
-        cols = ['Team', 'Match', 'Scout', 'Move', 'Auto Switch', 'Auto Scale', 'Auto Comm', 'Tele Switch', 'Tele Scale',
-                'Hang', 'Tele Comm', 'Rate']
+    matches = db.robot_match.select(
+        db.robot_match.team_no,
+        db.robot_match.sandstorm,
+        db.robot_match.st_lvl,
+        db.robot_match.pre_cargo_hp,
+        db.robot_match.pre_cargo_c,
+        db.robot_match.pre_rocket_hp,
+        db.robot_match.pre_rocket_c,
+        db.robot_match.auto_cargo_hp,
+        db.robot_match.auto_cargo_c,
+        db.robot_match.auto_rocket_hp,
+        db.robot_match.auto_rocket_c,
+        db.robot_match.teleop_cargo_hp,
+        db.robot_match.teleop_cargo_c,
+        db.robot_match.teleop_rocket_hp,
+        db.robot_match.teleop_rocket_c,
+        db.robot_match.lv_climb,
+        db.robot_match.comments
+    ).where(db.robot_match.event == event.get_event_id()) \
+        .order_by(db.robot_match.team_no.asc()).tuples()
+    matches = list(matches)
+    cols = ['Team', 'Sandstorm', 'Start LV', 'Pre CShip HP', 'Pre CShip C', 'Pre Rocket HP', 'Pre Rocket C',
+            'Auto CShip HP', 'Auto CShip C', 'Auto Rocket HP', 'Auto rocket C', 'Teleop CShip HP', 'Teleop CShip C',
+            'Teleop Rocket HP', 'Teleop Rocket C', 'Climb LV', 'Comments']
 
-        return render_template('view.html', cols=cols, matches=matches)
-    else:
-        return redirect(url_for('index'))
+    return render_template('view.html', cols=cols, matches=matches)
 
 
 @app.route('/pit')
+@login_required
 def pit():
-    if valid:
-        done = db.team.select(db.team.team_no, db.team.team_nm).where(db.pit.select(fn.Count(db.pit.team_no)).where(
-            (db.pit.team_no == db.team.team_no) & (db.pit.event == event)) != 0)
+    done = db.team.select(db.team.team_no, db.team.team_nm).where(db.pit.select(fn.Count(db.pit.team_no)).where(
+        (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) != 0)
 
-        todo = db.team.select(db.team.team_no, db.team.team_nm).where(db.pit.select(fn.Count(db.pit.team_no)).where(
-            (db.pit.team_no == db.team.team_no) & (db.pit.event == event)) == 0)
+    todo = db.team.select(db.team.team_no, db.team.team_nm).where(db.pit.select(fn.Count(db.pit.team_no)).where(
+        (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) == 0)
 
-        return render_template('pit.html', todo=todo, done=done)
-    else:
-        return redirect(url_for('index'))
+    return render_template('pit.html', todo=todo, done=done)
 
 
 @app.route('/pit-scout')
+@login_required
 def pit_scout():
-    if valid:
-        team_no = request.args.get('team_no', None)
+    team_no = request.args.get('team_no', None)
 
-        team = db.team.select().where(db.team.team_no == team_no)
-        team = list(team.tuples())[0]
+    team = db.team.select().where(db.team.team_no == team_no)
+    team = list(team.tuples())[0]
 
-        print(team)
+    print(team)
 
-        results = db.pit.select(db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
-                                db.pit.auto, db.pit.teleop, db.pit.ball_mech,
-                                db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                db.pit.climb, db.pit.strategy).where(
-            (db.pit.team_no == team_no) & (db.pit.event == event))
+    results = db.pit.select(db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
+                            db.pit.auto, db.pit.teleop, db.pit.ball_mech,
+                            db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
+                            db.pit.climb, db.pit.strategy).where(
+        (db.pit.team_no == team_no) & (db.pit.event == event.get_event_id()))
 
-        try:
-            results = list(results.tuples())[0]
-        except IndexError:
-            results = []
+    try:
+        results = list(results.tuples())[0]
+    except IndexError:
+        results = []
 
-        return render_template('pit_scout.html', team=team, results=results)
-    else:
-        return redirect(url_for('index'))
+    return render_template('pit_scout.html', team=team, results=results)
 
 
 @app.route('/pit-submit', methods=['POST'])
+@login_required
 def pit_submit():
-    if valid:
-        team_no = request.form.get('team_no')
-        drivetrain = request.form.get('drive-train', "")
-        fast = request.form.get('fast', '')
-        held = request.form.get('held', '')
-        auto = request.form.get('auto', '')
-        teleop = request.form.get('teleop', '')
-        cargo_mech = request.form.get('cargo-mech', '')
-        hatch_mech = request.form.get('hatch-mech', '')
-        cargo_ship = request.form.get('cargo-ship', '')
-        rocket = request.form.get('rocket', '')
-        climb = request.form.get('climb', '')
-        strat = request.form.get('strat', '')
+    team_no = request.form.get('team_no')
+    drivetrain = request.form.get('drive-train', "")
+    fast = request.form.get('fast', '')
+    held = request.form.get('held', '')
+    auto = request.form.get('auto', '')
+    teleop = request.form.get('teleop', '')
+    cargo_mech = request.form.get('cargo-mech', '')
+    hatch_mech = request.form.get('hatch-mech', '')
+    cargo_ship = request.form.get('cargo-ship', '')
+    rocket = request.form.get('rocket', '')
+    climb = request.form.get('climb', '')
+    strat = request.form.get('strat', '')
 
-        try:
-            pit_res = db.pit.get((db.pit.team_no == team_no) & (db.pit.event == event))
-            pit_res.drivetrain = drivetrain
-            pit_res.speed = fast
-            pit_res.climb = climb
-            pit_res.fabrication = held
-            pit_res.rocket = rocket
-            pit_res.auto = auto
-            pit_res.teleop = teleop
-            pit_res.cargo_ship = cargo_ship
-            pit_res.harch_mech = hatch_mech
-            pit_res.ball_mech = cargo_mech
-            pit_res.strategy = strat
+    try:
+        pit_res = db.pit.get((db.pit.team_no == team_no) & (db.pit.event == event))
+        pit_res.drivetrain = drivetrain
+        pit_res.speed = fast
+        pit_res.climb = climb
+        pit_res.fabrication = held
+        pit_res.rocket = rocket
+        pit_res.auto = auto
+        pit_res.teleop = teleop
+        pit_res.cargo_ship = cargo_ship
+        pit_res.harch_mech = hatch_mech
+        pit_res.ball_mech = cargo_mech
+        pit_res.strategy = strat
 
-        except DoesNotExist:
-            pit_res = db.pit(team_no=team_no, event_id=event, drivetrain=drivetrain,
-                             speed=fast, climb=climb, fabrication=held,
-                             rocket=rocket, auto=auto, teleop=teleop,
-                             cargo_ship=cargo_ship, hatch_mech=hatch_mech, ball_mech=cargo_mech,
-                             strategy=strat)
+    except DoesNotExist:
+        pit_res = db.pit(team_no=team_no, event_id=event.get_event_id(), drivetrain=drivetrain,
+                         speed=fast, climb=climb, fabrication=held,
+                         rocket=rocket, auto=auto, teleop=teleop,
+                         cargo_ship=cargo_ship, hatch_mech=hatch_mech, ball_mech=cargo_mech,
+                         strategy=strat)
 
-        pit_res.save()
+    pit_res.save()
 
-        return redirect(url_for('pit'))
-    else:
-        return redirect(url_for('index'))
+    return redirect(url_for('pit'))
 
 
 @app.route('/pit-view', methods=['GET', 'POST'])
+@login_required
 def pit_view():
-    if valid:
-        teams = db.team.select().join(db.event_team_xref, JOIN_INNER,
-                                      (db.team.team_no == db.event_team_xref.team_no) & (
-                                              db.event_team_xref.event == event)).order_by(
-            db.team.team_no.asc()).tuples()
-        teams = list(teams)
+    teams = db.team.select().join(db.event_team_xref, JOIN_INNER,
+                                  (db.team.team_no == db.event_team_xref.team_no) & (
+                                          db.event_team_xref.event == event.get_event_id())).order_by(
+        db.team.team_no.asc()).tuples()
+    teams = list(teams)
 
-        data_with = []
-        data_against = []
+    data_with = []
+    data_against = []
 
-        if request.method == 'POST':
-            team_one = request.form.get('team-one', None)
-            team_two = request.form.get('team-two', None)
-            team_three = request.form.get('team-three', None)
+    if request.method == 'POST':
+        team_one = request.form.get('team-one', None)
+        team_two = request.form.get('team-two', None)
+        team_three = request.form.get('team-three', None)
 
-            team_wone = request.form.get('team-wone', None)
-            team_wtwo = request.form.get('team-wtwo', None)
+        team_wone = request.form.get('team-wone', None)
+        team_wtwo = request.form.get('team-wtwo', None)
 
-            if team_one is not None:
-                team_one = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
-                                         db.pit.auto, db.pit.teleop, db.pit.ball_mech,
-                                         db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                         db.pit.climb, db.pit.strategy, db.team.team_nm).where(
-                    (db.pit.team_no == team_one) & (db.pit.event == event)).join(db.team, JOIN_INNER,
-                                                                                 db.team.team_no == db.pit.team_no)
-                print(list(team_one.tuples()))
-                data_against.append(list(team_one.tuples())[0])
-            if team_two is not None:
-                team_two = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
-                                         db.pit.auto, db.pit.teleop, db.pit.ball_mech,
-                                         db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                         db.pit.climb, db.pit.strategy, db.team.team_nm).where(
-                    (db.pit.team_no == team_two) & (db.pit.event == event)).join(db.team, JOIN_INNER,
-                                                                                 db.team.team_no == db.pit.team_no)
-                data_against.append(list(team_two.tuples())[0])
-            if team_three is not None:
-                team_three = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
-                                           db.pit.auto, db.pit.teleop, db.pit.ball_mech,
-                                           db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                           db.pit.climb, db.pit.strategy, db.team.team_nm).where(
-                    (db.pit.team_no == team_three) & (db.pit.event == event)).join(db.team, JOIN_INNER,
-                                                                                   db.team.team_no == db.pit.team_no)
-                data_against.append(list(team_three.tuples())[0])
+        if team_one is not None:
+            team_one = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
+                                     db.pit.auto, db.pit.teleop, db.pit.ball_mech,
+                                     db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
+                                     db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                (db.pit.team_no == team_one) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
+                                                                             db.team.team_no == db.pit.team_no)
+            print(list(team_one.tuples()))
+            data_against.append(list(team_one.tuples())[0])
+        if team_two is not None:
+            team_two = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
+                                     db.pit.auto, db.pit.teleop, db.pit.ball_mech,
+                                     db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
+                                     db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                (db.pit.team_no == team_two) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
+                                                                             db.team.team_no == db.pit.team_no)
+            data_against.append(list(team_two.tuples())[0])
+        if team_three is not None:
+            team_three = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
+                                       db.pit.auto, db.pit.teleop, db.pit.ball_mech,
+                                       db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
+                                       db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                (db.pit.team_no == team_three) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
+                                                                               db.team.team_no == db.pit.team_no)
+            data_against.append(list(team_three.tuples())[0])
 
-            if team_wone is not None:
-                team_wone = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
-                                          db.pit.auto, db.pit.teleop, db.pit.ball_mech,
-                                          db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                          db.pit.climb, db.pit.strategy, db.team.team_nm).where(
-                    (db.pit.team_no == team_wone) & (db.pit.event == event)).join(db.team, JOIN_INNER,
-                                                                                  db.team.team_no == db.pit.team_no)
-                data_with.append(list(team_wone.tuples())[0])
-            if team_wtwo is not None:
-                team_wtwo = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
-                                          db.pit.auto, db.pit.teleop, db.pit.ball_mech,
-                                          db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                          db.pit.climb, db.pit.strategy, db.team.team_nm).where(
-                    (db.pit.team_no == team_wtwo) & (db.pit.event == event)).join(db.team, JOIN_INNER,
-                                                                                  db.team.team_no == db.pit.team_no)
-                data_with.append(list(team_wtwo.tuples())[0])
+        if team_wone is not None:
+            team_wone = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
+                                      db.pit.auto, db.pit.teleop, db.pit.ball_mech,
+                                      db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
+                                      db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                (db.pit.team_no == team_wone) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
+                                                                              db.team.team_no == db.pit.team_no)
+            data_with.append(list(team_wone.tuples())[0])
+        if team_wtwo is not None:
+            team_wtwo = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
+                                      db.pit.auto, db.pit.teleop, db.pit.ball_mech,
+                                      db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
+                                      db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                (db.pit.team_no == team_wtwo) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
+                                                                              db.team.team_no == db.pit.team_no)
+            data_with.append(list(team_wtwo.tuples())[0])
 
-            print(data_against)
-            print(data_with)
+        print(data_against)
+        print(data_with)
 
-        return render_template('pit_view.html', teams=teams, data_against=data_against, data_with=data_with)
+    return render_template('pit_view.html', teams=teams, data_against=data_against, data_with=data_with)
+
+
+##############ADMIN
+
+@app.route('/admin', methods=['GET'])
+@roles_required('admin')
+def admin():
+    users = db.user.select(db.user.user_id, db.user.username, db.user.email, db.user.first_name, db.user.last_name,
+                           db.user.confirmed_at, db.user.active)
+
+    for u in users:
+        for r in u.user_roles_set:
+            print(r.role.role_id)
+            print(r.role.role_nm)
+
+    return render_template('admin/admin.html', users=users)
+
+
+@app.route('/admin-edit/<int:user_id>', methods=['GET', 'POST'])
+@roles_required('admin')
+def edit(user_id):
+    if request.method == 'POST':
+
+        return redirect(admin)
     else:
-        return redirect(url_for('index'))
+        user = db.user.get(db.user.user_id == user_id)
+
+        roles = list(db.role.select().where(
+            db.role.role_id.not_in(
+                db.user_roles.select(db.user_roles.role).where(
+                    db.user_roles.user == user.user_id
+                )
+            )
+        ).tuples())
+
+        user_roles = []
+        for r in user.user_roles_set:
+            user_roles.append([r.role.role_id, r.role.role_nm])
+
+        print(user_roles)
+        print(roles)
+
+        return render_template('admin/edit.html', user=user, user_roles=user_roles, roles=roles)
+
+
+@app.route('/delete')
+@roles_required('admin')
+def delete():
+    user_id = request.args.get('u_id')
+    if int(user_id) == int(current_user.id):
+        return redirect(url_for('admin'))
+    querydb.softDeleteUser(user_id)
+    return redirect(url_for('admin'))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,33 @@
+table{
+  margin: 0 auto;
+}
+
+
+#admin-form{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#admin-portal{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /*NARROW SCREEN*/
+  @media only screen and (max-width: 1000px) {
+    flex-direction: column;
+
+    button{
+      margin: 1em 0;
+    }
+  }
+
+  /*WIDE SCREEN*/
+  @media only screen and (min-width: 1001px) {
+
+    button {
+      margin: 0 1em;
+    }
+  }
+}

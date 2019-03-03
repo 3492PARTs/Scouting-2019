@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<main id="mainAdmin">
+    <div class="box">
+        <h1 class="title">Users</h1>
+        <div class="table-wrapper">
+            <table class="table" id="admin-results">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Confirmed</th>
+                        <th>Active</th>
+                        <th>Roles</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for u in users %}
+                        <td>{{ u.username }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.first_name + ' ' + u.last_name}}</td>
+                        <td>{{ u.confirmed_at }}</td>
+                        <td><input type="checkbox" disabled {% if u.active %} checked {% endif %}></td>
+                        <td>
+                            {% for r in u.user_roles_set %}
+                                {{ r.role.role_nm }}
+                                <br>
+                            {% endfor %}
+                        </td>
+                        <td><a class="btn btn-secondary" href="{{ url_for('edit', user_id=u.user_id) }}">Edit</a></td>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+{% endblock %}

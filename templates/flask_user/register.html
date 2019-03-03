@@ -3,7 +3,8 @@
 {% block content %}
 {% from "flask_user/_macros.html" import render_field, render_submit_field %}
 <main class="main-user-mgnt" id="register">
-    <div class="box">
+    {% if current_user.is_authenticated and current_user.has_roles("admin") %}
+        <div class="box">
         <h1>{%trans%}Register{%endtrans%}</h1>
         <hr>
         <form action="" method="POST" novalidate formnovalidate class="form" role="form">
@@ -62,5 +63,10 @@
             </div>
         </form>
     </div>
+    {% else %}
+        <div class="box">
+            <h2>Only admins can make new users. Please see an admin.</h2>
+        </div>
+    {% endif %}
 </main>
 {% endblock %}

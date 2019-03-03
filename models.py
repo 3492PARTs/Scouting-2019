@@ -91,3 +91,34 @@ class robot_match(MySQLModel):
 
     class Meta:
         db_table = "robot_match"
+
+
+class user(MySQLModel):
+    user_id = PrimaryKeyField()
+    username = CharField()
+    password = CharField()
+    email = CharField()
+    confirmed_at = DateTimeField(null=True)
+    active = BooleanField()
+    first_name = CharField()
+    last_name = CharField(null=True)
+
+    class Meta:
+        db_table = "user"
+
+
+class role(MySQLModel):
+    role_id = PrimaryKeyField()
+    role_nm = CharField()
+
+    class Meta:
+        db_table = "role"
+
+
+class user_roles(MySQLModel):
+    user_role_id = PrimaryKeyField()
+    user = ForeignKeyField(user, to_field="user_id")
+    role = ForeignKeyField(role, to_field="role_id")
+
+    class Meta:
+        db_table = "user_roles"

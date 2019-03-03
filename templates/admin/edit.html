@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Edit{% endblock %}
+{% block content %}
+<main id="edit">
+    <div class="box">
+        <h1 class="title">Edit User</h1>
+        <hr>
+        <form action="{{ url_for('edit', user_id=user.user_id) }}" method="post">
+            <div class="form-control-1">
+                <label>Username:
+                    <input type="text" value="{{ user.username }}" disabled>
+                </label>
+            </div>
+            <div class="form-control-2">
+                <label>Email:
+                    <input type="text" value="{{ user.email }}">
+                </label>
+            </div>
+            <div class="form-control-2">
+                <label>Active:
+                    <input type="checkbox" {% if user.active %} checked {% endif %}>
+                </label>
+            </div>
+            <div class="form-control-2">
+                <label>First Name:
+                    <input type="text" value="{{ user.first_name }}">
+                </label>
+            </div>
+            <div class="form-control-2">
+                <label>Last Name:
+                    <input type="text" value="{{ user.last_name }}">
+                </label>
+            </div>
+            <div class="form-control-2">
+                <div class="table-wrapper">
+                    <table class="table" id="role-edit">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="form-control-2">
+                <input type="submit" class="btn btn-success">
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+    var user_roles = {{ user_roles|tojson|safe }};
+    var roles = {{ roles|tojson|safe }};
+
+
+
+    $('#role-edit > tbody').append(
+
+    );
+</script>
+{% endblock %}

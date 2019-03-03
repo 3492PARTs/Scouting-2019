@@ -2,20 +2,20 @@
 {% block title %}Scouting{% endblock %}
 {% block content %}
     <main id="scout-index">
-        {% if event_id == ''%}
-            <div id="passwd">
-                <form method="POST" action="{{ url_for('index') }}">
-                    <label for="event">Event:</label>
-                    <select id="event" name="event" required>
-                        <option disabled selected value></option>
-                        {% for event in events %}
-                            <option value= "{{ event[0] }}">{{ event[1]|string }}</option>
-                        {% endfor %}
-                    </select>
-                    <input type="submit">
-                </form>
-            </div>
-        {% else %}
+
+        <div id="passwd">
+            <form method="POST" action="{{ url_for('index') }}">
+                <label for="event">Event:</label>
+                <select id="event" name="event" required>
+                    <option disabled {% if -1 == event_id %} selected {% endif %} value></option>
+                    {% for event in events %}
+                        <option value= "{{ event[0] }}" {% if event[0] == event_id %} selected {% endif %}>{{ event[1]|string }}</option>
+                    {% endfor %}
+                </select>
+                <input type="submit">
+            </form>
+        </div>
+        {% if event_id != ''%}
             <div>
                 <div id="scout-type">
                     <div class="scout-btn">
