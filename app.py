@@ -347,7 +347,7 @@ def pit_submit():
     strat = request.form.get('strat', '')
 
     try:
-        pit_res = db.pit.get((db.pit.team_no == team_no) & (db.pit.event == event))
+        pit_res = db.pit.get((db.pit.team_no == team_no) & (db.pit.event == event.get_event_id()))
         pit_res.drivetrain = drivetrain
         pit_res.speed = fast
         pit_res.climb = climb
