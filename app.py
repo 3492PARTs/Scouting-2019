@@ -26,7 +26,7 @@ app.config[
     'SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://elgyqslrczcdhpme:kdfd5rqRVKPdyWzmuym3jh4dZVvdEZphefNuZnw3mFkccxsqD2UZxJachbmi4mm5@f79d1040-d58c-4b2d-a431-a88d017b1284.mysql.sequelizer.com/dbf79d1040d58c4b2da431a88d017b1284'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['CSRF_ENABLED'] = True
-app.config['USER_APP_NAME'] = 'Passion'
+app.config['USER_APP_NAME'] = 'PARTs Scouting'
 app.config['USER_AFTER_REGISTER_ENDPOINT'] = 'user.login'
 app.config.from_pyfile('config.cfg')
 # Setup Flask-User
