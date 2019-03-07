@@ -285,11 +285,17 @@ def pit():
     if event.get_event_id() == -1:
         return redirect(url_for('index'))
 
-    done = db.team.select(db.team.team_no, db.team.team_nm).where(db.pit.select(fn.Count(db.pit.team_no)).where(
-        (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) != 0)
+    done = db.team.select(db.team.team_no, db.team.team_nm).where((db.pit.select(fn.Count(db.pit.team_no)).where(
+        (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) != 0) &
+                                                                  (db.event_team_xref.select(fn.Count(db.event_team_xref.team_no)).where((db.event_team_xref.team_no == db.team.team_no) & (db.event_team_xref.event == event.get_event_id())) > 0
+                                                                   )
+                                                                  )
 
-    todo = db.team.select(db.team.team_no, db.team.team_nm).where(db.pit.select(fn.Count(db.pit.team_no)).where(
-        (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) == 0)
+    todo = db.team.select(db.team.team_no, db.team.team_nm).where((db.pit.select(fn.Count(db.pit.team_no)).where(
+        (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) == 0) &
+                                                                  (db.event_team_xref.select(fn.Count(db.event_team_xref.team_no)).where((db.event_team_xref.team_no == db.team.team_no) & (db.event_team_xref.event == event.get_event_id())) > 0
+                                                                   )
+                                                                  )
 
     return render_template('pit.html', todo=todo, done=done)
 
