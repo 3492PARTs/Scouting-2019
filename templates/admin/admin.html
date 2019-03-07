@@ -3,6 +3,10 @@
 {% block content %}
 <main id="mainAdmin">
     <div class="box">
+        <h1 class="title">New User Form</h1>
+        <a href="{{ url_for('user.register') }}">Register</a>
+    </div>
+    <div class="box">
         <h1 class="title">Users</h1>
         <div class="table-wrapper">
             <table class="table" id="admin-results">
