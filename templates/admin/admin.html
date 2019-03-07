@@ -23,18 +23,20 @@
                 </thead>
                 <tbody id="tableBody">
                     {% for u in users %}
-                        <td>{{ u.username }}</td>
-                        <td>{{ u.email }}</td>
-                        <td>{{ u.first_name + ' ' + u.last_name}}</td>
-                        <td>{{ u.confirmed_at }}</td>
-                        <td><input type="checkbox" disabled {% if u.active %} checked {% endif %}></td>
-                        <td>
-                            {% for r in u.user_roles_set %}
-                                {{ r.role.role_nm }}
-                                <br>
-                            {% endfor %}
-                        </td>
-                        <td><a class="btn btn-secondary" href="{{ url_for('edit', user_id=u.user_id) }}">Edit</a></td>
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.first_name + ' ' + u.last_name}}</td>
+                            <td>{{ u.confirmed_at }}</td>
+                            <td><input type="checkbox" disabled {% if u.active %} checked {% endif %}></td>
+                            <td>
+                                {% for r in u.user_roles_set %}
+                                    {{ r.role.role_nm }}
+                                    <br>
+                                {% endfor %}
+                            </td>
+                            <td><a class="btn btn-secondary" href="{{ url_for('edit', user_id=u.user_id) }}">Edit</a></td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
