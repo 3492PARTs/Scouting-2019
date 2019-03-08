@@ -17,7 +17,8 @@ from wtforms import StringField, FieldList
 from wtforms.validators import DataRequired
 import sqlalchemy.exc
 import models as db
-import query
+import cloudinary
+import cloudinary.uploader
 from eventID import eventID
 
 app = Flask(__name__)
@@ -29,6 +30,14 @@ app.config['CSRF_ENABLED'] = True
 app.config['USER_APP_NAME'] = 'PARTs Scouting'
 app.config['USER_AFTER_REGISTER_ENDPOINT'] = 'user.login'
 app.config.from_pyfile('config.cfg')
+
+# cloudinary
+cloudinary.config(
+    cloud_name="dht6pgx2v",
+    api_key="887715119995856",
+    api_secret="oS-NCh680ISLrElmNmFHouqkKZA"
+)
+
 # Setup Flask-User
 
 db_alchemy = SQLAlchemy(app)
@@ -146,7 +155,8 @@ def field():
         return redirect(url_for('index'))
 
     teams = db.team.select(db.team.team_no, db.team.team_nm).join(db.event_team_xref, JOIN_INNER, (
-            db.team.team_no == db.event_team_xref.team_no) & (db.event_team_xref.event == event.get_event_id())).order_by(
+            db.team.team_no == db.event_team_xref.team_no) & (
+                                                                              db.event_team_xref.event == event.get_event_id())).order_by(
         db.team.team_no.asc()).tuples()
     teams = list(teams)
     return render_template('field.html', teams=teams)
@@ -287,13 +297,19 @@ def pit():
 
     done = db.team.select(db.team.team_no, db.team.team_nm).where((db.pit.select(fn.Count(db.pit.team_no)).where(
         (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) != 0) &
-                                                                  (db.event_team_xref.select(fn.Count(db.event_team_xref.team_no)).where((db.event_team_xref.team_no == db.team.team_no) & (db.event_team_xref.event == event.get_event_id())) > 0
+                                                                  (db.event_team_xref.select(
+                                                                      fn.Count(db.event_team_xref.team_no)).where((
+                                                                                                                              db.event_team_xref.team_no == db.team.team_no) & (
+                                                                                                                              db.event_team_xref.event == event.get_event_id())) > 0
                                                                    )
                                                                   )
 
     todo = db.team.select(db.team.team_no, db.team.team_nm).where((db.pit.select(fn.Count(db.pit.team_no)).where(
         (db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) == 0) &
-                                                                  (db.event_team_xref.select(fn.Count(db.event_team_xref.team_no)).where((db.event_team_xref.team_no == db.team.team_no) & (db.event_team_xref.event == event.get_event_id())) > 0
+                                                                  (db.event_team_xref.select(
+                                                                      fn.Count(db.event_team_xref.team_no)).where((
+                                                                                                                              db.event_team_xref.team_no == db.team.team_no) & (
+                                                                                                                              db.event_team_xref.event == event.get_event_id())) > 0
                                                                    )
                                                                   )
 
@@ -316,15 +332,18 @@ def pit_scout():
     results = db.pit.select(db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
                             db.pit.auto, db.pit.teleop, db.pit.ball_mech,
                             db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                            db.pit.climb, db.pit.strategy).where(
+                            db.pit.climb, db.pit.strategy, db.pit.img_id, db.pit.img_ver).where(
         (db.pit.team_no == team_no) & (db.pit.event == event.get_event_id()))
 
     try:
         results = list(results.tuples())[0]
+
+        img_url = cloudinary.CloudinaryImage(results[11], version=results[12]).build_url()
     except IndexError:
         results = []
+        img_url = ''
 
-    return render_template('pit_scout.html', team=team, results=results)
+    return render_template('pit_scout.html', team=team, results=results, img_url=img_url)
 
 
 @app.route('/pit-submit', methods=['POST'])
@@ -345,9 +364,19 @@ def pit_submit():
     rocket = request.form.get('rocket', '')
     climb = request.form.get('climb', '')
     strat = request.form.get('strat', '')
+    public_id = ''
+    version = ''
 
     try:
         pit_res = db.pit.get((db.pit.team_no == team_no) & (db.pit.event == event.get_event_id()))
+
+        if 'image' in request.files:
+            image = request.files['image']
+            if allowed_file(image.filename):
+                response = cloudinary.uploader.upload(image, public_id=pit_res.img_id)
+                public_id = response['public_id']
+                version = str(response['version'])
+
         pit_res.drivetrain = drivetrain
         pit_res.speed = fast
         pit_res.climb = climb
@@ -359,13 +388,22 @@ def pit_submit():
         pit_res.harch_mech = hatch_mech
         pit_res.ball_mech = cargo_mech
         pit_res.strategy = strat
+        pit_res.img_id = public_id
+        pit_res.img_ver = version
 
     except DoesNotExist:
+        if 'image' in request.files:
+            image = request.files['image']
+            if allowed_file(image.filename):
+                response = cloudinary.uploader.upload(image)
+                public_id = response['public_id']
+                version = str(response['version'])
+
         pit_res = db.pit(team_no=team_no, event_id=event.get_event_id(), drivetrain=drivetrain,
                          speed=fast, climb=climb, fabrication=held,
                          rocket=rocket, auto=auto, teleop=teleop,
                          cargo_ship=cargo_ship, hatch_mech=hatch_mech, ball_mech=cargo_mech,
-                         strategy=strat)
+                         strategy=strat, img_id=public_id, img_ver=version)
 
     pit_res.save()
 
@@ -377,7 +415,7 @@ def pit_submit():
 def pit_view():
     if event.get_event_id() == -1:
         return redirect(url_for('index'))
-    
+
     teams = db.team.select().join(db.event_team_xref, JOIN_INNER,
                                   (db.team.team_no == db.event_team_xref.team_no) & (
                                           db.event_team_xref.event == event.get_event_id())).order_by(
@@ -399,44 +437,49 @@ def pit_view():
             team_one = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
                                      db.pit.auto, db.pit.teleop, db.pit.ball_mech,
                                      db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                     db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                                     db.pit.climb, db.pit.strategy, db.team.team_nm, db.pit.img_id, db.pit.img_ver).where(
                 (db.pit.team_no == team_one) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
-                                                                             db.team.team_no == db.pit.team_no)
+                                                                                            db.team.team_no == db.pit.team_no)
             print(list(team_one.tuples()))
-            data_against.append(list(team_one.tuples())[0])
+            team = list(team_one.tuples())[0]
+            data_against.append([team, (cloudinary.CloudinaryImage(team[13], version=team[14]).build_url())])
         if team_two is not None:
             team_two = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
                                      db.pit.auto, db.pit.teleop, db.pit.ball_mech,
                                      db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                     db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                                     db.pit.climb, db.pit.strategy, db.team.team_nm, db.pit.img_id, db.pit.img_ver).where(
                 (db.pit.team_no == team_two) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
-                                                                             db.team.team_no == db.pit.team_no)
-            data_against.append(list(team_two.tuples())[0])
+                                                                                            db.team.team_no == db.pit.team_no)
+            team = list(team_two.tuples())[0]
+            data_against.append([team, (cloudinary.CloudinaryImage(team[13], version=team[14]).build_url())])
         if team_three is not None:
             team_three = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
                                        db.pit.auto, db.pit.teleop, db.pit.ball_mech,
                                        db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                       db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                                       db.pit.climb, db.pit.strategy, db.team.team_nm, db.pit.img_id, db.pit.img_ver).where(
                 (db.pit.team_no == team_three) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
-                                                                               db.team.team_no == db.pit.team_no)
-            data_against.append(list(team_three.tuples())[0])
+                                                                                              db.team.team_no == db.pit.team_no)
+            team = list(team_three.tuples())[0]
+            data_against.append([team, (cloudinary.CloudinaryImage(team[13], version=team[14]).build_url())])
 
         if team_wone is not None:
             team_wone = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
                                       db.pit.auto, db.pit.teleop, db.pit.ball_mech,
                                       db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                      db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                                      db.pit.climb, db.pit.strategy, db.team.team_nm, db.pit.img_id, db.pit.img_ver).where(
                 (db.pit.team_no == team_wone) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
-                                                                              db.team.team_no == db.pit.team_no)
-            data_with.append(list(team_wone.tuples())[0])
+                                                                                             db.team.team_no == db.pit.team_no)
+            team = list(team_wone.tuples())[0]
+            data_with.append([team, (cloudinary.CloudinaryImage(team[13], version=team[14]).build_url())])
         if team_wtwo is not None:
             team_wtwo = db.pit.select(db.pit.team_no, db.pit.drivetrain, db.pit.speed, db.pit.fabrication,
                                       db.pit.auto, db.pit.teleop, db.pit.ball_mech,
                                       db.pit.hatch_mech, db.pit.cargo_ship, db.pit.rocket,
-                                      db.pit.climb, db.pit.strategy, db.team.team_nm).where(
+                                      db.pit.climb, db.pit.strategy, db.team.team_nm, db.pit.img_id, db.pit.img_ver).where(
                 (db.pit.team_no == team_wtwo) & (db.pit.event == event.get_event_id())).join(db.team, JOIN_INNER,
-                                                                              db.team.team_no == db.pit.team_no)
-            data_with.append(list(team_wtwo.tuples())[0])
+                                                                                             db.team.team_no == db.pit.team_no)
+            team = list(team_wtwo.tuples())[0]
+            data_with.append([team, (cloudinary.CloudinaryImage(team[13], version=team[14]).build_url())])
 
         print(data_against)
         print(data_with)
@@ -495,6 +538,17 @@ def delete():
         return redirect(url_for('admin'))
     querydb.softDeleteUser(user_id)
     return redirect(url_for('admin'))
+
+
+# helpers
+def allowed_file(filename):
+    """Returns whether a filename's extension indicates that it is an image.
+
+    :param str filename: A filename.
+    :return: Whether the filename has an recognized image file extension
+    :rtype: bool"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
 
 if __name__ == '__main__':

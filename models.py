@@ -63,6 +63,8 @@ class pit(MySQLModel):
     hatch_mech = CharField()
     ball_mech = CharField()
     strategy = CharField()
+    img_id = CharField()
+    img_ver = CharField()
 
     class Meta:
         db_table = "pit"

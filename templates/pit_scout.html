@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Field{% endblock %}
+{% block title %}Pit{% endblock %}
 {% block content %}
     <main id="mainPit">
 
@@ -7,7 +7,7 @@
 
         <hr>
 
-        <form method="POST" action="{{ url_for('pit_submit') }}">
+        <form method="POST" action="{{ url_for('pit_submit') }}" enctype=multipart/form-data>
             <input name="team_no" type="hidden" value="{{ team[0] }}">
             <div class="form-control-1">
                 <label for="drive-train">What kind of drive train do you have?</label>
@@ -77,6 +77,8 @@
 
             <div class="form-control-2">
                 <input type="file" name="image" accept="image/*">
+                <h4>Existing Image, If Any</h4>
+                <img id="img_url" src="{{ img_url }}">
             </div>
 
             <input type="submit">

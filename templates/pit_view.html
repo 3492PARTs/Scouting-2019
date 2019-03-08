@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Field{% endblock %}
+{% block title %}Pit View{% endblock %}
 {% block content %}
     <main id="pitView">
         <div>
@@ -57,18 +57,20 @@
                 <hr>
                 {% for d in data_against %}
                     <div class="resourceTabs">
-                        <p>Team: {{ d[0] }} {{ d[12] }}</p>
-                        <p>Drive Train: {{ d[1] }}</p>
-                        <p>Speed: {{ d[2] }}</p>
-                        <p>Fabrication: {{ d[3] }}</p>
-                        <p>Auto: {{ d[4] }}</p>
-                        <p>Teleop: {{ d[5] }}</p>
-                        <p>Cargo Mechanism: {{ d[6] }}</p>
-                        <p>Hatch Mechanism: {{ d[7] }}</p>
-                        <p>Cargo Ship Strategy: {{ d[8] }}</p>
-                        <p>Rocket Strategy: {{ d[9] }}</p>
-                        <p>Climb Strategy: {{ d[10] }}</p>
-                        <p>Other Strategies: {{ d[11] }}</p>
+                        <img class="pit_view_img" src="{{ d[1] }}">
+                        <br>
+                        <p>Team: {{ d[0][0] }} {{ d[0][12] }}</p>
+                        <p>Drive Train: {{ d[0][1] }}</p>
+                        <p>Speed: {{ d[0][2] }}</p>
+                        <p>Fabrication: {{ d[0][3] }}</p>
+                        <p>Auto: {{ d[0][4] }}</p>
+                        <p>Teleop: {{ d[0][5] }}</p>
+                        <p>Cargo Mechanism: {{ d[0][6] }}</p>
+                        <p>Hatch Mechanism: {{ d[0][7] }}</p>
+                        <p>Cargo Ship Strategy: {{ d[0][8] }}</p>
+                        <p>Rocket Strategy: {{ d[0][9] }}</p>
+                        <p>Climb Strategy: {{ d[0][10] }}</p>
+                        <p>Other Strategies: {{ d[0][11] }}</p>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -78,18 +80,20 @@
                 <hr>
                 {% for d in data_with %}
                     <div class="resourceTabs">
-                        <p>Team: {{ d[0] }} {{ d[12] }}</p>
-                        <p>Drive Train: {{ d[1] }}</p>
-                        <p>Speed: {{ d[2] }}</p>
-                        <p>Fabrication: {{ d[3] }}</p>
-                        <p>Auto: {{ d[4] }}</p>
-                        <p>Teleop: {{ d[5] }}</p>
-                        <p>Cargo Mechanism: {{ d[6] }}</p>
-                        <p>Hatch Mechanism: {{ d[7] }}</p>
-                        <p>Cargo Ship Strategy: {{ d[8] }}</p>
-                        <p>Rocket Strategy: {{ d[9] }}</p>
-                        <p>Climb Strategy: {{ d[10] }}</p>
-                        <p>Other Strategies: {{ d[11] }}</p>
+                        <img class="pit_view_img" src="{{ d[1] }}">
+                        <br>
+                        <p>Team: {{ d[0][0] }} {{ d[0][12] }}</p>
+                        <p>Drive Train: {{ d[0][1] }}</p>
+                        <p>Speed: {{ d[0][2] }}</p>
+                        <p>Fabrication: {{ d[0][3] }}</p>
+                        <p>Auto: {{ d[0][4] }}</p>
+                        <p>Teleop: {{ d[0][5] }}</p>
+                        <p>Cargo Mechanism: {{ d[0][6] }}</p>
+                        <p>Hatch Mechanism: {{ d[0][7] }}</p>
+                        <p>Cargo Ship Strategy: {{ d[0][8] }}</p>
+                        <p>Rocket Strategy: {{ d[0][9] }}</p>
+                        <p>Climb Strategy: {{ d[0][10] }}</p>
+                        <p>Other Strategies: {{ d[0][11] }}</p>
                     </div>
                 {% endfor %}
             {% endif %}
