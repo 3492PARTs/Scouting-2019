@@ -416,9 +416,10 @@ def pit_view():
     if event.get_event_id() == -1:
         return redirect(url_for('index'))
 
-    teams = db.team.select().join(db.event_team_xref, JOIN_INNER,
-                                  (db.team.team_no == db.event_team_xref.team_no) & (
-                                          db.event_team_xref.event == event.get_event_id())).order_by(
+    teams = db.team.select().where(db.pit.select(fn.Count(db.pit.pit_id)).where((db.pit.team_no == db.team.team_no) & (db.pit.event == event.get_event_id())) > 0)\
+        .join(db.event_team_xref, JOIN_INNER,
+              (db.team.team_no == db.event_team_xref.team_no) & (
+                      db.event_team_xref.event == event.get_event_id())).order_by(
         db.team.team_no.asc()).tuples()
     teams = list(teams)
 
