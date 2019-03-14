@@ -139,8 +139,8 @@ def index():
     events = db.event.select().order_by(db.event.event_id.asc()).tuples()
     events = list(events)
 
-    if event.get_event_id() == -1 or request.form.get('event', '') != '':
-        event_id = request.form.get('event', '')
+    if request.form.get('event', '') != '':
+        event_id = int(request.form.get('event', ''))
         event.set_event_id(event_id)
     else:
         event_id = event.get_event_id()

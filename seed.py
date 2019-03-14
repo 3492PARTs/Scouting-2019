@@ -1,4 +1,6 @@
 import json
+import datetime
+import peewee
 
 import models as db
 import requests
@@ -9,19 +11,27 @@ __email__ = "http://bduke.net"
 
 
 insert = []
-
-r = requests.get("https://www.thebluealliance.com/api/v3/event/2019ohmv/teams", headers={"X-TBA-Auth-Key" : "vOi134WDqMjUjGslV08r9ElOGoiWAU8LtSMxMBPziTVertNPmsdUqBOY8cYnyb7u"})
+now = datetime.datetime.now()
+#r = requests.get("https://www.thebluealliance.com/api/v3/event/2019ohmv/teams", headers={"X-TBA-Auth-Key" : "vOi134WDqMjUjGslV08r9ElOGoiWAU8LtSMxMBPziTVertNPmsdUqBOY8cYnyb7u"})
+r = requests.get("https://www.thebluealliance.com/api/v3/team/frc3492/events/" + str(now.year), headers={"X-TBA-Auth-Key": "vOi134WDqMjUjGslV08r9ElOGoiWAU8LtSMxMBPziTVertNPmsdUqBOY8cYnyb7u"})
 r = json.loads(r.text)
 
-for t in r:
-    #insert.append(db.team(team_no=t['team_number'], team_nm=t['nickname']))
+for e in r:
+    print(e)
+    insert.append(db.event(event_nm=e['name'], date_st=e['start_date'], date_end=e['end_date'], event_cd=e['key']))
 
-    insert.append(db.event_team_xref(team_no=t['team_number'], event_id=4))
+    s = requests.get("https://www.thebluealliance.com/api/v3/event/" + e['key'] + "/teams", headers={"X-TBA-Auth-Key": "vOi134WDqMjUjGslV08r9ElOGoiWAU8LtSMxMBPziTVertNPmsdUqBOY8cYnyb7u"})
+    s = json.loads(s.text)
+    print(s)
 
-#insert.append(db.event(event_nm='Miami Valley Regional', date_st='2019-03-06', date_end='2019-03-09'))
+    for t in s:
+        insert.append(db.team(team_no=t['team_number'], team_nm=t['nickname']))
+        insert.append(db.event_team_xref(team_no=t['team_number'], event_id=(db.event.select(db.event.event_id).where(db.event.event_cd == e['key']))))
+
 
 for i in insert:
-    i.save(force_insert=True)
+    try:
+        i.save(force_insert=True)
+    except peewee.IntegrityError:
+        print("already in there")
     print(i)
-
-

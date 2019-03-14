@@ -25,6 +25,7 @@ class MySQLModel(Model):
 class event(MySQLModel):
     event_id = PrimaryKeyField()
     event_nm = CharField()
+    event_cd = CharField()
     date_st = DateTimeField()
     date_end = DateTimeField()
 
