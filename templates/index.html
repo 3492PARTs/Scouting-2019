@@ -49,13 +49,13 @@
                         <a href="{{ url_for('pit_view') }}">Pit Data</a>
                     </div>
                 </div>
-                {% if current_user.is_authenticated and current_user.has_roles("admin") %}
-                    <div>
-                        <div class="scout-btn">
-                            <a href="{{ url_for('admin') }}">Admin</a>
-                        </div>
-                    </div>
-                {% endif %}
+            </div>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.has_roles("admin") %}
+            <div>
+                <div class="scout-btn">
+                    <a href="{{ url_for('admin') }}">Admin</a>
+                </div>
             </div>
         {% endif %}
     </main>

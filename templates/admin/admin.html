@@ -3,6 +3,12 @@
 {% block content %}
 <main id="mainAdmin">
     <div class="box">
+        <h1 class="title">Sync Events</h1>
+        <div class="scout-btn">
+            <a href="{{ url_for('admin_sync') }}">Sync</a>
+        </div>
+    </div>
+    <div class="box">
         <h1 class="title">New User Form</h1>
         <a href="{{ url_for('user.register') }}">Register</a>
     </div>

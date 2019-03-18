@@ -12,7 +12,6 @@ __email__ = "http://bduke.net"
 
 insert = []
 now = datetime.datetime.now()
-#r = requests.get("https://www.thebluealliance.com/api/v3/event/2019ohmv/teams", headers={"X-TBA-Auth-Key" : "vOi134WDqMjUjGslV08r9ElOGoiWAU8LtSMxMBPziTVertNPmsdUqBOY8cYnyb7u"})
 r = requests.get("https://www.thebluealliance.com/api/v3/team/frc3492/events/" + str(now.year), headers={"X-TBA-Auth-Key": "vOi134WDqMjUjGslV08r9ElOGoiWAU8LtSMxMBPziTVertNPmsdUqBOY8cYnyb7u"})
 r = json.loads(r.text)
 

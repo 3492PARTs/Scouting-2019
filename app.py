@@ -1,6 +1,7 @@
 import math
 
-from flask import Flask, render_template, request, redirect, url_for, Response
+import peewee
+from flask import Flask, render_template, request, redirect, url_for, Response, jsonify
 from flask_wtf import FlaskForm
 from peewee import *
 from flask_mail import Mail
@@ -20,6 +21,10 @@ import models as db
 import cloudinary
 import cloudinary.uploader
 from eventID import eventID
+import json
+import datetime
+import requests
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'thisisasecret'
@@ -531,6 +536,17 @@ def edit(user_id):
         return render_template('admin/edit.html', user=user, user_roles=user_roles, roles=roles)
 
 
+@app.route('/admin-edit/remove-role/<int:user_id>/<int:role_id>')
+@roles_required('admin')
+def remove_role(user_id, role_id):
+
+    try{
+
+    }
+
+    return redirect(url_for('remove_role', user_id=user_id))
+
+
 @app.route('/delete')
 @roles_required('admin')
 def delete():
@@ -539,6 +555,68 @@ def delete():
         return redirect(url_for('admin'))
     querydb.softDeleteUser(user_id)
     return redirect(url_for('admin'))
+
+
+@app.route('/admin/sync')
+@roles_required('admin')
+def admin_sync():
+    insert = []
+    now = datetime.datetime.now()
+    r = requests.get("https://www.thebluealliance.com/api/v3/team/frc3492/events/" + str(now.year),
+                     headers={"X-TBA-Auth-Key": "vOi134WDqMjUjGslV08r9ElOGoiWAU8LtSMxMBPziTVertNPmsdUqBOY8cYnyb7u"})
+    r = json.loads(r.text)
+
+    for e in r:
+        event_ = {
+            'event_nm': e['name'],
+            'date_st': e['start_date'],
+            'date_end': e['end_date'],
+            'event_cd': e['key'],
+            'teams': [],
+            'teams_to_keep': []
+        }
+
+        s = requests.get("https://www.thebluealliance.com/api/v3/event/" + e['key'] + "/teams",
+                         headers={"X-TBA-Auth-Key": "vOi134WDqMjUjGslV08r9ElOGoiWAU8LtSMxMBPziTVertNPmsdUqBOY8cYnyb7u"})
+        s = json.loads(s.text)
+
+        for t in s:
+            event_['teams'].append({
+                'team_no': t['team_number'],
+                'team_nm': t['nickname']
+            })
+
+            event_['teams_to_keep'].append(t['team_number'])
+
+        insert.append(event_)
+
+    messages = ''
+    for e in insert:
+        # remove teams that have been removed from an event
+        db.event_team_xref.delete().where((db.event_team_xref.team_no.not_in(e['teams_to_keep']) & (db.event_team_xref.event == db.event.select(db.event.event_id).where(db.event.event_cd == e['event_cd'])))).execute()
+
+        try:
+            db.event(event_nm=e['event_nm'], date_st=e['date_st'], date_end=e['date_end'], event_cd=e['event_cd']).save(force_insert=True)
+            messages += "Added event to DB: " + e['event_cd'] + '\n'
+        except peewee.IntegrityError:
+            messages += "Event already in DB: " + e['event_cd'] + '\n'
+
+        for t in e['teams']:
+
+            try:
+                db.team(team_no=t['team_no'], team_nm=t['team_nm']).save(force_insert=True)
+                messages += "Added team to DB: " + str(t['team_no']) + " " + t['team_nm'] + '\n'
+            except peewee.IntegrityError:
+                messages += "Team already in DB: " + str(t['team_no']) + " " + t['team_nm'] + '\n'
+
+            try:
+                db.event_team_xref(team_no=t['team_no'],
+                                   event_id=(db.event.select(db.event.event_id).where(db.event.event_cd == e['event_cd']))).save(force_insert=True)
+                messages += "Added team to event in DB: " + str(t['team_no']) + " " + t['team_nm'] + " event: " + e['event_cd'] + '\n'
+            except peewee.IntegrityError:
+                messages += "Team already in DB at event: " + str(t['team_no']) + " " + t['team_nm'] + " event: " + e['event_cd'] + '\n'
+
+    return render_template('admin/sync.html', messages=messages)
 
 
 # helpers

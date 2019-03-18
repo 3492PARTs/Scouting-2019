@@ -32,6 +32,12 @@
                 </label>
             </div>
             <div class="form-control-2">
+                <input type="submit" class="btn btn-success">
+            </div>
+        </form>
+
+        <form>
+            <div class="form-control-2">
                 <div class="table-wrapper">
                     <table class="table" id="role-edit">
                         <thead>
@@ -41,13 +47,15 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-
+                            {% for r in  user_roles%}
+                                <tr>
+                                    <td>{{ r[1] }}</td>
+                                    <td><a class="btn btn-secondary" href="{{ url_for('remove_role', user_id=u.user_id, role_id=r[0]) }}">Edit</a></td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            </div>
-            <div class="form-control-2">
-                <input type="submit" class="btn btn-success">
             </div>
         </form>
     </div>
