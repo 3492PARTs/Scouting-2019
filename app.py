@@ -540,9 +540,6 @@ def edit(user_id):
 @roles_required('admin')
 def remove_role(user_id, role_id):
 
-    try{
-
-    }
 
     return redirect(url_for('remove_role', user_id=user_id))
 
